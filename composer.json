@@ -1,0 +1,44 @@
+{
+  "name": "asavenkov/kontur-focus",
+  "description": "Kontur.Focus API client library",
+  "type": "library",
+  "keywords": [
+    "kontur",
+    "focus",
+    "kontur-focus",
+    "kontur.focus",
+    "контур",
+    "фокус",
+    "контур-фокус",
+    "контру.фокус",
+    "api",
+    "client",
+    "library"
+  ],
+  "license": "MIT",
+  "version": "0.1.0",
+  "authors": [
+    {
+      "name": "Andrey Savenkov",
+      "email": "a@savenkov.dev"
+    }
+  ],
+  "require": {
+    "php": "^7.2.5",
+    "guzzlehttp/guzzle": "^6.3",
+    "ext-json": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^8.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "ASavenkov\\KonturFocus\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ASavenkov\\KonturFocus\\Tests\\": "tests"
+    }
+  }
+}
