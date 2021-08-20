@@ -2,16 +2,16 @@
 
 namespace ASavenkov\KonturFocus;
 
+use ASavenkov\KonturFocus\Models\Analytics;
 use GuzzleHttp\Exception\GuzzleException;
 use ASavenkov\KonturFocus\Models\BriefReport;
-use ASavenkov\KonturFocus\Models\BriefReportSummary;
 
 class Client {
-    const BASE_URL = 'https://focus-api.kontur.ru';
+    public const BASE_URL = 'https://focus-api.kontur.ru';
     /**
      * @var string
      */
-    private $apiKey;
+    private string $apiKey;
 
     /**
      * Конструктор
@@ -23,10 +23,11 @@ class Client {
     }
 
     /**
-     * @param string $inn
-     * @param string|null $ogrn
+     * @param  string  $inn
+     * @param  string|null  $ogrn
      * @return BriefReport|null
      * @throws GuzzleException
+     * @throws \JsonException
      */
     public function getBriefReport(string $inn, string $ogrn = null)
     {
@@ -42,20 +43,42 @@ class Client {
         $responseStatus = $response->getStatusCode();
         if ($responseStatus === 200) {
             $responseBody = (string) $response->getBody();
-            $responseArray = json_decode($responseBody, true);
+            $responseArray = json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
             if (count($responseArray) > 0) {
                 $responseItem = current($responseArray);
-                $responseBriefReport = $responseItem['briefReport'];
-                $responseBriefReportSummary = $responseBriefReport['summary'];
-                $briefReportObject = new BriefReport();
-                $briefReportObject->setInn($responseItem['inn']);
-                $briefReportObject->setOgrn($responseItem['ogrn']);
-                $briefReportObject->setFocusHref($responseItem['focusHref']);
-                $briefReportObject->setHref($responseBriefReport['href']);
-                $briefReportObject->setGreenStatements(isset($responseBriefReportSummary['greenStatements']) && $responseBriefReportSummary['greenStatements']);
-                $briefReportObject->setRedStatements(isset($responseBriefReportSummary['redStatements']) && $responseBriefReportSummary['redStatements']);
-                $briefReportObject->setYellowStatements(isset($responseBriefReportSummary['yellowStatements']) && $responseBriefReportSummary['yellowStatements']);
-                return $briefReportObject;
+                return BriefReport::fromApiResponseItem($responseItem);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param  string  $inn
+     * @param  string|null  $ogrn
+     * @return Analytics|null
+     * @throws GuzzleException
+     * @throws \JsonException
+     * @throws \Exception
+     */
+
+    public function getAnalytics(string $inn, string $ogrn = null)
+    {
+        $methodUrl = '/api3/analytics';
+        $requestUrl = $methodUrl . '?key=' . $this->apiKey;
+        $requestUrl .= '&inn=' . $inn;
+        if (!empty($ogrn)) {
+            $requestUrl .= '&ogrn=' . $ogrn;
+        }
+
+        $client = new \GuzzleHttp\Client(['base_uri' => self::BASE_URL]);
+        $response = $client->get($requestUrl);
+        $responseStatus = $response->getStatusCode();
+        if ($responseStatus === 200) {
+            $responseBody = (string) $response->getBody();
+            $responseArray = json_decode($responseBody, true, 512, JSON_THROW_ON_ERROR);
+            if (count($responseArray) > 0) {
+                $responseItem = current($responseArray);
+                return Analytics::fromApiResponseItem($responseItem);
             }
         }
         return null;
